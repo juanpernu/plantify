@@ -1,63 +1,49 @@
+import { useContext, useState } from 'react';
+import { useRouter } from 'next/router';
 import Link from 'next/link';
-import dbConnect from '../utils/dbConnect';
-import Plant from '../models/Plant';
+import { Context } from './context';
+import { login } from '../services/users';
 
-const Index = ({ plants }) => (
-  <>
-    {plants.map((plant) => (
-      <div key={plant._id}>
-        <div className="card">
-          <img src={plant.image_url} alt={plant.name} />
-          <h5 className="plant-name">{plant.name}</h5>
-          <div className="main-content">
-            <p className="plant-name">{plant.name}</p>
+const Index = () => {
+  const { setUserData } = useContext(Context);
+  const [userName, setUserName] = useState('');
+  const [userPassword, setUserPassword] = useState('');
+  const router = useRouter();
 
-            {/* Extra Plant Info: Likes and Dislikes */}
-            {!!plant.likes.length && <div className="likes info">
-              <p className="label">Likes</p>
-              <ul>
-                {plant.likes.map((data, index) => (
-                  <li key={index}>{data} </li>
-                ))}
-              </ul>
-            </div>}
-            {!!plant.dislikes.length && <div className="dislikes info">
-              <p className="label">Dislikes</p>
-              <ul>
-                {plant.dislikes.map((data, index) => (
-                  <li key={index}>{data} </li>
-                ))}
-              </ul>
-            </div>}
-
-            <div className="btn-container">
-              <Link href="/[id]/edit" as={`/${plant._id}/edit`}>
-                <button className="btn edit">Edit</button>
-              </Link>
-              <Link href="/[id]" as={`/${plant._id}`}>
-                <button className="btn view">View</button>
-              </Link>
-            </div>
-          </div>
-        </div>
+  const onSubmitHandler = async () => {
+    try {
+      const [result] = await login(userPassword, userName);
+      if (result) {
+        setUserData(result);
+        router.push(`/home/[id]`, `/home/${result._id}`);
+      };
+    } catch (error) {
+      console.log('error', error);
+    }
+  }
+  const setValue = e => {
+    e.target.name === "userName" && setUserName(e.target.value);
+    e.target.name === "userPassword" && setUserPassword(e.target.value);
+  }
+  return (
+    <section id="login-page">
+      <div className="card">
+        <h2>Welcome!</h2>
+        <p>User name</p>
+        <input type="text" value={userName} name="userName" onChange={e => setValue(e)}/>
+        <p>Password</p>
+        <input type="password" value={userPassword} name="userPassword" onChange={e => setValue(e)}/>
+        <button type="submit" onClick={onSubmitHandler}>Login</button>
+        <Link href="/create-account">
+          <button className="btn view">Create account</button>
+        </Link>
       </div>
-    ))}
-  </>
-);
+    </section>
+  )
+};
 
-/* Retrieves plant(s) data from mongodb database */
 export async function getServerSideProps() {
-  await dbConnect();
-
-  /* find all the data in our database */
-  const result = await Plant.find({});
-  const plants = result.map((doc) => {
-    const plant = doc.toObject();
-    plant._id = plant._id.toString();
-    return plant;
-  });
-
-  return { props: { plants } };
+  return { props: { pageName: 'login' } };
 }
 
 export default Index;

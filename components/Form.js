@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import { putData, postData } from '../services';
+import { putData, postData } from '../services/plants';
 
 const Form = ({ formId, plantForm, forNewPlant = true }) => {
   const router = useRouter();
@@ -16,6 +16,7 @@ const Form = ({ formId, plantForm, forNewPlant = true }) => {
     image_url: plantForm.image_url,
     likes: plantForm.likes,
     dislikes: plantForm.dislikes,
+    owner: plantForm.owner,
   })
 
   /* The PUT method edits an existing entry in the mongodb database. */
@@ -23,7 +24,7 @@ const Form = ({ formId, plantForm, forNewPlant = true }) => {
     const { id } = router.query
     try {
       await putData(form, id);
-      router.push('/');
+      router.push('/home');
     } catch (error) {
       setMessage('Failed to update plant')
     }
@@ -33,7 +34,7 @@ const Form = ({ formId, plantForm, forNewPlant = true }) => {
   const handlePostData = async (form) => {
     try {
       await postData(form);
-      router.push('/');
+      router.push(`/home/[id]`, `/home/${plantForm.owner}`);
     } catch (error) {
       setMessage('Failed to add plant');
     }
@@ -48,7 +49,7 @@ const Form = ({ formId, plantForm, forNewPlant = true }) => {
     setForm({
       ...form,
       [name]: value,
-    })
+    });
   }
 
   const handleSubmit = (e) => {

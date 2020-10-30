@@ -1,11 +1,16 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
+const { ObjectId } = Schema.Types;
 
 /* PlantSchema will correspond to a collection in your MongoDB database. */
-const PlantSchema = new mongoose.Schema({
+const PlantSchema = new Schema({
   name: {
     type: String,
     required: [true, 'Please provide a name for this plant.'],
     maxlength: [20, 'Name cannot be more than 60 characters'],
+  },
+  owner: {
+    type: ObjectId,
+    ref: "User"
   },
   species: {
     type: String,

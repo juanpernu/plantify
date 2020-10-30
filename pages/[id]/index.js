@@ -8,13 +8,13 @@ const PlantPage = ({ plant }) => {
   const router = useRouter();
   const [message, setMessage] = useState('');
 
-  const handleDelete = async () => {
+  const handleDelete = async(owner) => {
     const plantID = router.query.id;
     try {
       await fetch(`/api/plants/${plantID}`, {
         method: 'Delete',
       })
-      router.push('/');
+      router.push(`/home/[id]`, `/home/${owner}`);
     } catch (error) {
       setMessage('Failed to delete the plant.');
     }
@@ -50,7 +50,7 @@ const PlantPage = ({ plant }) => {
             <Link href="/[id]/edit" as={`/${plant._id}/edit`}>
               <button className="btn edit">Edit</button>
             </Link>
-            <button className="btn delete" onClick={handleDelete}>
+            <button className="btn delete" onClick={() => handleDelete(plant.owner)}>
               Delete
             </button>
           </div>
@@ -66,6 +66,7 @@ export async function getServerSideProps({ params }) {
 
   const plant = await Plant.findById(params.id).lean();
   plant._id = plant._id.toString();
+  plant.owner = plant.owner.toString();
 
   return { props: { plant } }
 }
